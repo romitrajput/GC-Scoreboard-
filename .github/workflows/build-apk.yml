@@ -1,14 +1,12 @@
 name: Build APK
 
-# Runs on every push to main (including uploading a new GullyCricket.zip on github.com),
-# and on demand from Actions → Build APK → Run workflow.
 on:
   push:
     branches: [main, master]
   workflow_dispatch:
 
 permissions:
-  contents: write   # needed to publish the APK as a Release
+  contents: write
 
 jobs:
   build:
@@ -17,18 +15,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Choose source (GullyCricket.zip if present, else repo files)
+      - name: Unpack GullyCricket.zip
         id: src
         run: |
           if [ -f GullyCricket.zip ]; then
-            echo "📦 Building from GullyCricket.zip"
             unzip -q -o GullyCricket.zip -d "$RUNNER_TEMP/src"
             DIR="$(dirname "$(find "$RUNNER_TEMP/src" -maxdepth 3 -name settings.gradle | head -1)")"
           else
-            echo "📁 Building from repository files"
             DIR="$GITHUB_WORKSPACE"
           fi
-          [ -f "$DIR/settings.gradle" ] || { echo "❌ settings.gradle not found"; exit 1; }
+          [ -f "$DIR/settings.gradle" ] || { echo "settings.gradle not found"; exit 1; }
           echo "dir=$DIR" >> "$GITHUB_OUTPUT"
 
       - name: Set up Java 17
@@ -37,11 +33,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install Android SDK packages
-        run: sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+        run: |
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          [ -x "$SDKM" ] || SDKM="$(ls -d "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager | tail -1)"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Build APK
         working-directory: ${{ steps.src.outputs.dir }}
@@ -62,8 +59,5 @@ jobs:
           tag_name: build-${{ github.run_number }}
           name: Gully Scorer build ${{ github.run_number }}
           make_latest: true
-          body: |
-            📲 Tap **GullyScorer.apk** below to download, then open it on your Android phone.
-            Installs over the previous version — saved matches are kept.
-            Version 1.2.${{ github.run_number }} · commit ${{ github.sha }}
+          body: Tap GullyScorer.apk below to download and install on Android.
           files: GullyScorer.apk
