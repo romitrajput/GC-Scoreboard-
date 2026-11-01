@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121519">
+<title>Gully Cricket Scorer</title>
+<style>
+:root{--bg:#121519;--card:#1b2027;--card2:#232a33;--line:#2e3742;--chalk:#f4f1e6;--mut:#8d98a5;--ball:#c8f03c;--blue:#4fb3ff;--red:#ff5a4e;--amber:#ffc23d;--r:16px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--chalk);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px}
+body{padding-bottom:env(safe-area-inset-bottom)}
+#app{max-width:560px;margin:0 auto;padding:12px 12px 90px}
+h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.01em}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--mut);margin:22px 4px 10px;font-weight:700}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,select{font:inherit;color:var(--chalk);background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:11px 12px;width:100%;outline:none}
+input:focus{border-color:var(--ball)}
+.muted{color:var(--mut)}.small{font-size:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:13px 16px;font-weight:700;width:100%}
+.btn.pri{background:var(--ball);color:#111;border-color:var(--ball)}
+.btn.sm{width:auto;padding:10px 14px;font-size:14px;border-radius:12px}
+.btn.danger{color:var(--red)}
+.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}
+.top{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 12px;gap:8px}
+.top .t{font-weight:800;font-size:16px;text-align:center;flex:1}
+.ib{width:40px;height:40px;border-radius:12px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;font-size:18px;flex:0 0 auto}
+.brand{display:flex;align-items:center;gap:12px;margin:8px 4px 18px}
+.brand h1{font-size:26px;line-height:1}.brand h1 span{color:var(--ball)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 6px 6px 12px;font-size:14px}
+.chip button{width:22px;height:22px;border-radius:50%;background:#0003;font-size:14px;line-height:1}
+.chip.pool{padding:6px 12px}
+.seg{display:flex;background:var(--card2);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;padding:9px 6px;border-radius:9px;font-weight:700;font-size:14px;color:var(--mut)}
+.seg button.on{background:var(--chalk);color:#111}
+.set{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);gap:12px}
+.set:last-child{border-bottom:0}
+.set .l b{display:block;font-weight:700}.set .l small{color:var(--mut)}
+.step{display:flex;align-items:center;gap:6px}.step button{width:36px;height:36px;border-radius:10px;background:var(--card2);border:1px solid var(--line);font-size:18px;font-weight:700}.step span{min-width:30px;text-align:center;font-weight:800;font-size:18px}
+.sw{position:relative;width:48px;height:28px;flex:0 0 auto}.sw input{opacity:0;width:0;height:0}.sw i{position:absolute;inset:0;background:var(--card2);border:1px solid var(--line);border-radius:99px;transition:.2s}.sw i:after{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:var(--mut);border-radius:50%;transition:.2s}.sw input:checked+i{background:var(--ball)}.sw input:checked+i:after{left:23px;background:#111}
+.team{border-top:4px solid var(--ball)}.team.t1{border-top-color:var(--blue)}
+.tname{font-weight:800;font-size:18px;background:transparent;border:0;border-bottom:1px dashed var(--line);border-radius:0;padding:4px 0}
+.addrow{display:flex;gap:8px}.addrow input{flex:1}
+/* live */
+.hero{background:linear-gradient(135deg,#1f2a1a,#1b2027 60%);border:1px solid var(--line);border-radius:20px;padding:16px;position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;right:-30px;top:-30px;width:130px;height:130px;border-radius:50%;border:2px dashed #c8f03c22}
+.hero .tm{font-weight:700;color:var(--mut);font-size:13px;text-transform:uppercase;letter-spacing:.1em}
+.hero .sc{font-size:54px;font-weight:900;line-height:1;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.hero .sc small{font-size:20px;color:var(--mut);font-weight:700;margin-left:8px}
+.chase{font-size:14px;margin-top:6px}.chase b{color:var(--ball)}
+.fh{margin-top:10px;background:var(--amber);color:#111;font-weight:800;border-radius:10px;padding:6px 10px;display:inline-block;font-size:13px;animation:pulse 1s infinite alternate}
+@keyframes pulse{to{opacity:.6}}
+.bats{margin-top:12px;display:grid;gap:6px}
+.bat{display:flex;align-items:center;gap:8px;background:#0002;border-radius:12px;padding:9px 11px}
+.bat .nm{flex:1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bat.on{background:#c8f03c1a;outline:1px solid #c8f03c55}
+.bat .rb{font-variant-numeric:tabular-nums}.bat .rb b{font-size:18px}
+.bat .x{font-size:11px;color:var(--mut);min-width:64px;text-align:right}
+.bowl{display:flex;justify-content:space-between;margin-top:8px;font-size:14px;color:var(--mut)}.bowl b{color:var(--chalk)}
+.over{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;min-height:34px;align-items:center}
+.bl{min-width:34px;height:34px;padding:0 6px;border-radius:17px;display:grid;place-items:center;font-weight:800;font-size:13px;background:var(--card2);border:1px solid var(--line)}
+.bl.b4{background:var(--blue);color:#111;border:0}.bl.b6{background:var(--ball);color:#111;border:0}.bl.w{background:var(--red);color:#fff;border:0}.bl.x{background:#ffc23d26;color:var(--amber);border-color:#ffc23d55}
+.bl.sm{min-width:26px;height:26px;font-size:11px;border-radius:13px}
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.pad button{height:62px;border-radius:16px;background:var(--card);border:1px solid var(--line);font-size:24px;font-weight:900}
+.pad button:active{transform:scale(.95);background:var(--card2)}
+.pad .x{color:var(--amber);font-size:17px}.pad .w{background:var(--red);border-color:var(--red);color:#fff;font-size:18px}.pad .u{font-size:15px;color:var(--mut)}
+.pad .k4{color:var(--blue)}.pad .k6{color:var(--ball)}
+.tools{display:flex;gap:8px;margin-top:10px;overflow-x:auto;padding-bottom:2px}
+.tools button{flex:0 0 auto;font-size:13px;font-weight:700;padding:9px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--mut)}
+.ovlog{font-size:13px;color:var(--mut);display:grid;gap:6px}
+.ovlog div{display:flex;gap:4px;align-items:center;flex-wrap:wrap}.ovlog .on{min-width:44px;font-weight:700;color:var(--chalk)}
+/* modal */
+#modal{position:fixed;inset:0;z-index:20;display:none}
+#modal.open{display:block}
+#modal .bg{position:absolute;inset:0;background:#000a;animation:fade .2s}
+#modal .sheet{position:absolute;left:0;right:0;bottom:0;max-height:88vh;overflow:auto;background:var(--card);border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;animation:up .22s ease-out;border-top:1px solid var(--line)}
+@keyframes up{from{transform:translateY(40px);opacity:0}}@keyframes fade{from{opacity:0}}
+.sheet h3{font-size:20px;margin-bottom:4px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.opt{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:13px 10px;font-weight:700;text-align:left;min-height:52px}
+.opt small{display:block;color:var(--mut);font-weight:500;font-size:12px;margin-top:2px}
+.opt.on{background:var(--chalk);color:#111;border-color:var(--chalk)}.opt.on small{color:#444}
+.opt:disabled{opacity:.35}
+.opts.n{grid-template-columns:repeat(4,1fr)}.opts.n .opt{text-align:center;font-size:20px}
+#toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:var(--chalk);color:#111;font-weight:700;padding:11px 18px;border-radius:999px;opacity:0;transition:.25s;z-index:30;pointer-events:none;max-width:90vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%)}
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th{color:var(--mut);font-weight:600;text-align:right;padding:6px 4px;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+td{padding:8px 4px;border-top:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+td .how{display:block;color:var(--mut);font-size:11px}
+td b{font-size:14px}
+.inh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}.inh b{font-size:22px;font-weight:900}
+.res{border-radius:18px;padding:16px;background:linear-gradient(120deg,var(--ball),#8fd14f);color:#111;margin-bottom:12px}
+.res b{font-size:20px;display:block;font-weight:900}
+.res.tie{background:linear-gradient(120deg,var(--amber),#ff9a3d)}
+.mc{display:block;width:100%;text-align:left}
+.mc .ln{display:flex;justify-content:space-between;font-weight:700;margin:3px 0}.mc .ln.win{color:var(--ball)}
+.mc .rs{font-size:13px;color:var(--mut);margin-top:6px}
+.tag{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--card2);color:var(--mut)}
+.tag.live{background:var(--red);color:#fff}
+/* day */
+.dhero{border-radius:22px;padding:20px 18px;background:repeating-linear-gradient(-45deg,#ffffff05 0 10px,transparent 10px 20px),linear-gradient(160deg,#24341b,#16191e 70%);border:1px solid var(--line);position:relative;overflow:hidden}
+.dhero .k{font-size:12px;font-weight:800;letter-spacing:.2em;color:var(--ball)}
+.dhero h1{font-size:28px;margin:6px 0 14px;line-height:1.1}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat{background:#0003;border-radius:12px;padding:10px 6px;text-align:center}.stat b{display:block;font-size:22px;font-weight:900}.stat span{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+.potd{margin-top:12px;border-radius:20px;padding:18px;background:linear-gradient(135deg,#ffc23d,#ff8a3d);color:#1a1205;position:relative;overflow:hidden}
+.potd .k{font-size:11px;font-weight:900;letter-spacing:.2em}
+.potd .n{font-size:30px;font-weight:900;margin:4px 0}
+.potd .p{position:absolute;right:16px;top:16px;text-align:center;background:#1a120522;border-radius:14px;padding:8px 12px}.potd .p b{font-size:26px;display:block;line-height:1}
+.aw{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.awc{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.awc .i{font-size:22px}.awc .t{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-top:4px}
+.awc .n{font-weight:800;font-size:16px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.awc .v{color:var(--ball);font-weight:800;font-size:13px}
+.daychips{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
+.daychips button{flex:0 0 auto;padding:8px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--mut)}
+.daychips button.on{background:var(--chalk);color:#111}
+.chart{width:100%;height:auto;display:block}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:6px}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.rank{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--card2);font-size:11px;font-weight:800;margin-right:6px}
+.rank.g{background:var(--amber);color:#111}
+.empty{text-align:center;padding:40px 20px;color:var(--mut)}
+.empty .e{font-size:44px}
+.ib.mic{background:#ff5a4e22;border-color:#ff5a4e66}
+.micpulse{font-size:40px;width:96px;height:96px;border-radius:50%;background:var(--red);display:grid;place-items:center;margin:6px auto 14px;animation:pulse .7s infinite alternate}
+.cheat{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:13px;text-align:left;margin:12px 0}.cheat b{color:var(--ball)}
+img.share{width:100%;border-radius:14px;margin:12px 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+<div id="toast"></div>
+<input type="file" id="imp" accept="application/json,.json" style="display:none" onchange="doImport(this)">
+<script>
+"use strict";
+/* ================= storage ================= */
+const KEY='gully-cricket-v1';
+let S={matches:[],liveId:null,pool:[],lastSetup:null};
+try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad2=n=>String(n).padStart(2,'0');
+const dayKey=ts=>{const d=new Date(ts);return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())};
+const fmtDay=(k,o)=>new Date(k+'T00:00').toLocaleDateString(undefined,o||{weekday:'long',day:'numeric',month:'short'});
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const getM=id=>S.matches.find(m=>m.id===id);
+const ov=(b,bpo)=>Math.floor(b/bpo)+(b%bpo?'.'+(b%bpo):'');
+const ovs=(b,bpo)=>Math.floor(b/bpo)+'.'+(b%bpo);
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)}
+
+/* ================= router ================= */
+let view={name:'home'},lastView='';
+function go(name,p={},replace=false){view=Object.assign({name},p);try{history[replace?'replaceState':'pushState'](view,'')}catch(e){}render()}
+window.addEventListener('popstate',e=>{closeModal();view=e.state||{name:'home'};render()});
+function back(){if(history.length>1)history.back();else go('home',{},true)}
+
+/* ================= modal ================= */
+let modalLock=false;
+function openModal(html,lock=false){modalLock=lock;const m=$('#modal');m.innerHTML=`<div class="bg" onclick="if(!modalLock)closeModal()"></div><div class="sheet">${html}</div>`;m.classList.add('open')}
+function closeModal(){const m=$('#modal');m.classList.remove('open');m.innerHTML='';modalLock=false}
+const modalOpen=()=>$('#modal').classList.contains('open');
+let confirmCb=null;
+function ask(title,msg,yes,cb,danger){confirmCb=cb;openModal(`<h3>${title}</h3><p class="muted">${msg}</p><div class="row" style="margin-top:16px"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn ${danger?'danger':'pri'}" onclick="const f=confirmCb;closeModal();f&&f()">${yes}</button></div>`)}
+
+/* ================= cricket engine ================= */
+const newInn=bat=>({bat,bowl:1-bat,balls:[],s:null,ns:null,bw:null,closed:false});
+const FIELD_HOW=['Caught','Run out','Stumped','One tip one hand'];
+function howText(w,bowler,ft){const f=w.fld!=null?ft[w.fld]:null;
+  switch(w.how){case 'Bowled':return 'b '+bowler;
+  case 'Caught':return f?(f===bowler?'c & b '+bowler:'c '+f+' b '+bowler):'c ? b '+bowler;
+  case 'Run out':return 'run out'+(f?' ('+f+')':'');
+  case 'Stumped':return 'st '+(f||'?')+' b '+bowler;
+  case 'Hit wicket':return 'hit wicket b '+bowler;
+  case 'One tip one hand':return 'c '+(f?f+' ':'')+'(one-tip-one-hand) b '+bowler;
+  case 'Hit out of bounds':return 'hit out of bounds b '+bowler;
+  case 'Six & out':return 'six & out b '+bowler;}
+  return w.how}
+function calc(m,ii){
+  const inn=m.innings[ii],c=m.config,BT=m.teams[inn.bat].players,WT=m.teams[inn.bowl].players;
+  const bat=BT.map(n=>({name:n,r:0,b:0,f:0,s:0,out:false,how:'',in:false,ord:99}));
+  const bowl=WT.map(n=>({name:n,lb:0,r:0,w:0,wd:0,nb:0,dots:0,ord:99}));
+  let runs=0,wk=0,legal=0,ord=0,bord=0,cur=null;const ext={wd:0,nb:0,b:0,lb:0},overs=[],fow=[];
+  const seen=i=>{if(i!=null&&bat[i]&&!bat[i].in){bat[i].in=true;bat[i].ord=ord++}};
+  for(const e of inn.balls){
+    seen(e.s);seen(e.ns);
+    if(!cur){cur={bw:e.bw,balls:[],runs:0,w:0,legal:0};overs.push(cur)}
+    const bw=bowl[e.bw];if(bw.ord===99)bw.ord=bord++;
+    const t=e.runs+e.ex;runs+=t;cur.runs+=t;cur.balls.push(e);cur.bw=e.bw;
+    const bt=bat[e.s];
+    if(e.type!=='wd')bt.b++;
+    bt.r+=e.runs;if(e.runs===4)bt.f++;if(e.runs===6)bt.s++;
+    if(e.type)ext[e.type]+=e.ex;
+    bw.r+=e.runs+((e.type==='wd'||e.type==='nb')?e.ex:0);
+    if(e.type==='wd')bw.wd++;if(e.type==='nb')bw.nb++;
+    if(e.legal){legal++;cur.legal++;bw.lb++;if(t===0)bw.dots++}
+    if(e.w){wk++;cur.w++;const o=bat[e.w.out];o.out=true;o.how=howText(e.w,WT[e.bw],WT);if(e.w.how!=='Run out')bw.w++;fow.push({wk,runs,ball:legal,name:o.name})}
+    if(e.legal&&legal%c.bpo===0)cur=null;
+  }
+  seen(inn.s);seen(inn.ns);
+  const n=BT.length,maxWk=c.lms?n:n-1;
+  return {inn,bat,bowl,runs,wk,legal,ext,overs,fow,maxWk,team:m.teams[inn.bat].name,bowlTeam:m.teams[inn.bowl].name};
+}
+function isFreeHit(m,ii){if(!m.config.freeHit)return false;const b=m.innings[ii].balls,e=b[b.length-1];if(!e)return false;return e.type==='nb'||(e.type==='wd'&&e.fh)}
+function soloMode(m,k){const n=m.teams[k.inn.bat].players.length;return n===1||(m.config.lms&&k.wk>=n-1)}
+function needOf(m){
+  const ii=m.innings.length-1,inn=m.innings[ii],k=calc(m,ii);
+  if(inn.s==null)return 's';
+  if(inn.ns==null&&!soloMode(m,k))return 'ns';
+  if(inn.bw==null)return 'bw';
+  return null}
+function prevOverBowler(m,k){let p=null;for(const o of k.overs)if(o.legal===m.config.bpo)p=o.bw;return p}
+function addBall(m,{runs=0,type='',ran=0,w=null}){
+  const ii=m.innings.length-1,inn=m.innings[ii],c=m.config;
+  if(needOf(m))return;
+  let ex=0,legal=true;
+  if(type==='wd'){ex=c.wideRun+ran;legal=c.wideLegal}
+  else if(type==='nb'){ex=c.nbRun;legal=c.nbLegal}
+  else if(type==='b'||type==='lb')ex=ran;
+  const fh=isFreeHit(m,ii);
+  inn.balls.push({s:inn.s,ns:inn.ns,bw:inn.bw,runs,ex,type,legal,w,fh});
+  const phys=(type==='wd'||type==='b'||type==='lb')?ran:((runs===4||runs===6)?0:runs);
+  if(phys%2===1&&inn.ns!=null)[inn.s,inn.ns]=[inn.ns,inn.s];
+  if(w){if(inn.s===w.out)inn.s=null;else if(inn.ns===w.out)inn.ns=null}
+  let k=calc(m,ii);
+  if(w&&soloMode(m,k)){if(inn.s==null){inn.s=inn.ns;inn.ns=null}else inn.ns=null}
+  if(legal&&k.legal%c.bpo===0){if(inn.ns!=null)[inn.s,inn.ns]=[inn.ns,inn.s];inn.bw=null}
+  if(navigator.vibrate)try{navigator.vibrate(w?[60,40,60]:20)}catch(e){}
+  if(w)toast('OUT! '+k.bat[w.out].name+' — '+k.bat[w.out].how);
+  else if(runs===6)toast('SIX! 💥');else if(runs===4)toast('FOUR! 🔥');
+  if(legal&&k.legal%c.bpo===0&&k.legal<c.overs*c.bpo)setTimeout(()=>toast('End of over '+(k.legal/c.bpo)+' · '+k.runs+'/'+k.wk),w||runs>=4?1600:0);
+  afterBall(m);save();render();
+}
+let pendingBreak=false;
+function afterBall(m){
+  const ii=m.innings.length-1,inn=m.innings[ii],c=m.config,k=calc(m,ii);
+  const tgt=ii===1?calc(m,0).runs+1:null;
+  if(inn.closed||k.legal>=c.overs*c.bpo||k.wk>=k.maxWk||(tgt!=null&&k.runs>=tgt)){
+    if(ii===0){m.innings.push(newInn(inn.bowl));pendingBreak=true}
+    else finish(m)}
+}
+function resultOf(m){
+  const a=calc(m,0),b=calc(m,1),c=m.config;
+  if(b.runs>a.runs){const wl=b.maxWk-b.wk,bl=c.overs*c.bpo-b.legal;return {winner:b.inn.bat,text:`${b.team} won by ${wl} wicket${wl===1?'':'s'}`+(bl>0?` (${bl} ball${bl===1?'':'s'} left)`:'')}}
+  if(a.runs>b.runs){const d=a.runs-b.runs;return {winner:a.inn.bat,text:`${a.team} won by ${d} run${d===1?'':'s'}`}}
+  return {winner:-1,text:'Match tied! 🤝'}}
+function finish(m){m.status='done';m.result=resultOf(m);m.ended=Date.now();if(S.liveId===m.id)S.liveId=null;save();
+  setTimeout(()=>{go('match',{id:m.id,fresh:1},true)},0)}
+function undo(){
+  const m=getM(view.id);if(!m)return;
+  let ii=m.innings.length-1;
+  if(m.status==='done'){m.status='live';delete m.result;S.liveId=m.id}
+  if(m.innings[ii].balls.length===0&&ii===1){m.innings.pop();ii=0;pendingBreak=false}
+  const inn=m.innings[ii];inn.closed=false;
+  const e=inn.balls.pop();
+  if(!e){toast('Nothing to undo');save();render();return}
+  inn.s=e.s;inn.ns=e.ns;inn.bw=e.bw;save();closeModal();toast('Last ball undone');
+  if(view.name!=='live')go('live',{id:m.id},true);else render();
+}
+
+/* ================= setup ================= */
+const defCfg={six:'runs',overs:5,bpo:6,maxBowl:0,wideRun:1,wideLegal:false,nbRun:1,nbLegal:false,freeHit:true,lms:false};
+let draft=null,poolT=0,focusAdd=null;
+function newDraft(from){
+  const src=from||S.lastSetup;
+  draft={teams:src?src.teams.map(t=>({name:t.name,players:[...t.players]})):[{name:'Team A',players:[]},{name:'Team B',players:[]}],
+    cfg:Object.assign({},defCfg,src?src.cfg:{}),batFirst:0,common:(src&&src.common)||''};
+}
+function addP(t){const i=$('#add'+t);const names=i.value.split(/[,\n]/).map(s=>s.trim()).filter(Boolean);
+  if(!names.length)return;const all=new Set(draft.teams.flatMap(x=>x.players).map(x=>x.toLowerCase()));if(draft.common.trim())all.add(draft.common.trim().toLowerCase());let dup=0;
+  for(const n of names){if(all.has(n.toLowerCase())){dup++;continue}draft.teams[t].players.push(n.slice(0,24));all.add(n.toLowerCase())}
+  if(dup)toast('Skipped duplicate name');focusAdd=t;render()}
+function rmP(t,i){draft.teams[t].players.splice(i,1);render()}
+function poolAdd(i){draft.teams[poolT].players.push(S.pool[i]);render()}
+function movP(t,i){const p=draft.teams[t].players.splice(i,1)[0];draft.teams[1-t].players.push(p);render()}
+function shuffleTeams(){const all=draft.teams.flatMap(t=>t.players);if(all.length<2)return toast('Add some players first');
+  for(let i=all.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[all[i],all[j]]=[all[j],all[i]]}
+  draft.teams[0].players=all.filter((_,i)=>i%2===0);draft.teams[1].players=all.filter((_,i)=>i%2===1);toast('Teams shuffled 🎲');render()}
+function toss(){const w=Math.random()<.5?0:1;draft.batFirst=w;render();toast(`🪙 ${Math.random()<.5?'Heads':'Tails'}! ${draft.teams[w].name} won the toss & bat first`)}
+function adj(k,d,min,max){draft.cfg[k]=Math.max(min,Math.min(max,draft.cfg[k]+d));render()}
+function setC(k,v){draft.cfg[k]=v;render()}
+function startMatch(){
+  const d=draft;
+  d.teams.forEach((t,i)=>{t.name=(t.name||'').trim()||('Team '+'AB'[i])});
+  if(d.teams[0].name.toLowerCase()===d.teams[1].name.toLowerCase())return toast('Give the teams different names');
+  const cm=(d.common||'').trim().slice(0,24);
+  if(cm&&d.teams.some(t=>t.players.some(p=>p.toLowerCase()===cm.toLowerCase())))return toast(cm+' is already in a team — remove them there first');
+  const teams=d.teams.map(t=>({name:t.name,players:[...t.players,...(cm?[cm]:[])]}));
+  if(teams.some(t=>!t.players.length))return toast('Each team needs at least 1 player');
+  const cfg=Object.assign({},d.cfg);
+  if(teams.some(t=>t.players.length<2)&&!cfg.lms){cfg.lms=true;toast('Last man stands turned on (1-player team)')}
+  const day=dayKey(Date.now());
+  const m={id:uid(),created:Date.now(),day,no:S.matches.filter(x=>x.day===day).length+1,config:cfg,
+    teams,common:cm||null,innings:[newInn(d.batFirst)],status:'live'};
+  S.matches.push(m);S.liveId=m.id;
+  const pool=new Map(S.pool.map(p=>[p.toLowerCase(),p]));teams.flatMap(t=>t.players).forEach(p=>pool.set(p.toLowerCase(),p));
+  S.pool=[...pool.values()].slice(-80);S.lastSetup={teams:d.teams.map(t=>({name:t.name,players:[...t.players]})),cfg,common:cm};save();
+  go('live',{id:m.id},true);
+}
+function vSetup(){
+  const d=draft,c=d.cfg,used=new Set([...d.teams.flatMap(t=>t.players),d.common.trim()].map(x=>x.toLowerCase()));
+  const pool=S.pool.map((p,i)=>({p,i})).filter(x=>!used.has(x.p.toLowerCase()));
+  const team=t=>`<div class="card team t${t}">
+    <input class="tname" value="${esc(d.teams[t].name)}" maxlength="20" oninput="draft.teams[${t}].name=this.value" onchange="render()">
+    <div class="chips">${d.teams[t].players.map((p,i)=>`<span class="chip">${esc(p)}<button title="Move to other team" onclick="movP(${t},${i})">⇄</button><button onclick="rmP(${t},${i})">×</button></span>`).join('')||'<span class="muted small">No players yet — add names below</span>'}</div>
+    <div class="addrow"><input id="add${t}" placeholder="Player name (or many, comma separated)" enterkeyhint="done" onkeydown="if(event.key==='Enter')addP(${t})"><button class="btn sm pri" onclick="addP(${t})">Add</button></div>
+    <div class="small muted" style="margin-top:8px">${d.teams[t].players.length} player${d.teams[t].players.length===1?'':'s'}</div></div>`;
+  const sw=(k,l,s)=>`<div class="set"><div class="l"><b>${l}</b><small>${s}</small></div><label class="sw"><input type="checkbox" ${c[k]?'checked':''} onchange="setC('${k}',this.checked)"><i></i></label></div>`;
+  const st=(k,l,s,min,max,lab)=>`<div class="set"><div class="l"><b>${l}</b><small>${s}</small></div><div class="step"><button onclick="adj('${k}',-1,${min},${max})">−</button><span>${lab?lab(c[k]):c[k]}</span><button onclick="adj('${k}',1,${min},${max})">+</button></div></div>`;
+  return `<div class="top"><button class="ib" onclick="back()">←</button><div class="t">New match</div><button class="ib" title="Shuffle teams" onclick="shuffleTeams()">🎲</button></div>
+  ${team(0)}${team(1)}
+  <div class="card"><b>🤝 Common player</b> <span class="small muted">(optional)</span><div class="small muted">Plays for both teams, batting and bowling for each side. Great for odd numbers.</div><input style="margin-top:8px" value="${esc(d.common)}" placeholder="Name (leave empty if none)" maxlength="24" oninput="draft.common=this.value"></div>
+  ${pool.length?`<h2>Recent players</h2><div class="card"><div class="row" style="margin-bottom:6px"><span class="small muted" style="flex:0 0 auto">Tap to add to</span><div class="seg">${[0,1].map(t=>`<button class="${poolT===t?'on':''}" onclick="poolT=${t};render()">${esc(d.teams[t].name)}</button>`).join('')}</div></div><div class="chips">${pool.map(x=>`<button class="chip pool" onclick="poolAdd(${x.i})">+ ${esc(x.p)}</button>`).join('')}</div></div>`:''}
+  <h2>Match rules</h2><div class="card">
+    ${st('overs','Overs per innings','Per side',1,50)}
+    ${st('bpo','Balls per over','Legal deliveries',3,10)}
+    ${st('maxBowl','Max overs per bowler','So everyone gets to bowl',0,20,v=>v?v:'∞')}
+    <div class="set" style="display:block"><div class="l"><b>Hitting a six</b><small>Over the wall / on the roof</small></div><div class="seg" style="margin-top:8px">${[['runs','6 runs'],['out','Out (0 runs)'],['runsout','6 runs + out']].map(([k,l])=>`<button class="${(c.six||'runs')===k?'on':''}" onclick="setC('six','${k}')">${l}</button>`).join('')}</div></div>
+    ${st('wideRun','Runs for a wide','Penalty added to score',0,2)}
+    ${sw('wideLegal','Wide counts as a ball','Off = wide is re-bowled')}
+    ${st('nbRun','Runs for a no-ball','Penalty added to score',0,2)}
+    ${sw('nbLegal','No-ball counts as a ball','Off = no-ball is re-bowled')}
+    ${sw('freeHit','Free hit after no-ball','Only run-out allowed on free hit')}
+    ${sw('lms','Last man stands','Last batter can bat alone')}
+  </div>
+  <h2>Who bats first?</h2><div class="card"><div class="seg">${[0,1].map(t=>`<button class="${d.batFirst===t?'on':''}" onclick="draft.batFirst=${t};render()">${esc(d.teams[t].name)}</button>`).join('')}</div>
+  <button class="btn" style="margin-top:10px" onclick="toss()">🪙 Flip a coin</button></div>
+  <button class="btn pri" style="margin-top:6px;padding:17px;font-size:17px" onclick="startMatch()">Start match 🏏</button>`;
+}
+
+/* ================= live ================= */
+const LM=()=>getM(view.id);
+const nm=(m,n)=>esc(n)+(m.common&&n===m.common?' 🤝':'');
+function chip(e,sm){const c='bl'+(sm?' sm':'');
+  if(e.w)return `<span class="${c} w">W${e.runs?'+'+e.runs:''}</span>`;
+  if(e.type==='wd')return `<span class="${c} x">${e.ex>1?e.ex:''}wd</span>`;
+  if(e.type==='nb')return `<span class="${c} x">nb${e.runs?'+'+e.runs:''}</span>`;
+  if(e.type==='b'||e.type==='lb')return `<span class="${c} x">${e.ex}${e.type}</span>`;
+  return `<span class="${c} ${e.runs===4?'b4':e.runs===6?'b6':''}">${e.runs===0?'•':e.runs}</span>`}
+function vLive(m){
+  const ii=m.innings.length-1,inn=m.innings[ii],c=m.config,k=calc(m,ii);
+  const tgt=ii===1?calc(m,0).runs+1:null,left=c.overs*c.bpo-k.legal;
+  const crr=k.legal?(k.runs/k.legal*c.bpo).toFixed(2):'0.00';
+  let chase;
+  if(tgt){const need=tgt-k.runs;chase=`<div class="chase">Need <b>${need}</b> from <b>${left}</b> ball${left===1?'':'s'} · RRR ${left?(need/left*c.bpo).toFixed(2):'–'}</div>`}
+  else chase=`<div class="chase muted">${esc(k.bowlTeam)} bowling · ${c.overs} over innings${c.six==='out'?' · six = out':c.six==='runsout'?' · six = 6 + out':''}</div>`;
+  const brow=(i,on)=>{if(i==null)return '';const b=k.bat[i];const sr=b.b?Math.round(b.r/b.b*100):0;
+    return `<div class="bat ${on?'on':''}"><span class="nm">${on?'🏏 ':''}${nm(m,b.name)}</span><span class="rb"><b>${b.r}</b> <span class="muted">(${b.b})</span></span><span class="x">${b.f}×4 ${b.s}×6<br>SR ${sr}</span></div>`};
+  const w=inn.bw!=null?k.bowl[inn.bw]:null;
+  const last=k.overs[k.overs.length-1];
+  const curOver=last&&last.legal<c.bpo?last:null;
+  const prevOvers=k.overs.slice(0,curOver?-1:undefined).slice(-3).reverse();
+  return `<div class="top"><button class="ib" onclick="go('home')">⌂</button><div class="t">Match ${m.no} · ${ii?'2nd':'1st'} inn</div><button class="ib mic" title="Voice scoring" onclick="startVoice()">🎤</button><button class="ib" title="Scorecard" onclick="go('match',{id:'${m.id}'})">📋</button></div>
+  <div class="hero">
+    <div class="tm">${esc(k.team)}</div>
+    <div class="sc">${k.runs}/${k.wk}<small>${ovs(k.legal,c.bpo)} / ${c.overs} ov</small></div>
+    ${chase}<div class="small muted" style="margin-top:4px">CRR ${crr}${tgt?` · Target ${tgt}`:''} · Extras ${k.ext.wd+k.ext.nb+k.ext.b+k.ext.lb}</div>
+    ${isFreeHit(m,ii)?'<div class="fh">⚡ FREE HIT — only run-out counts</div>':''}
+    <div class="bats">${brow(inn.s,true)}${brow(inn.ns,false)}${inn.ns==null&&inn.s!=null&&soloMode(m,k)?'<div class="small muted" style="padding:2px 4px">Last man standing — batting alone</div>':''}</div>
+    <div class="bowl"><span>🎯 ${w?`<b>${esc(w.name)}</b>`:'—'}</span><span>${w?`<b>${ov(w.lb,c.bpo)}-${w.r}-${w.w}</b> <span class="small">(O-R-W)</span>`:''}</span></div>
+    <div class="over"><span class="small muted" style="margin-right:2px">This over</span>${curOver?curOver.balls.map(e=>chip(e)).join(''):'<span class="small muted">new over</span>'}</div>
+  </div>
+  <div class="pad">
+    <button onclick="tap(0)">0</button><button onclick="tap(1)">1</button><button onclick="tap(2)">2</button><button onclick="tap(3)">3</button>
+    <button class="k4" onclick="tap(4)">4</button><button class="k6" onclick="tap(6)">${(c.six||'runs')==='runs'||isFreeHit(m,ii)?'6':`6<small style="display:block;font-size:10px;color:var(--red);font-weight:800;margin-top:-4px">${c.six==='out'?'OUT':'+ OUT'}</small>`}</button><button class="x" onclick="openExtra('wd')">WIDE</button><button class="x" onclick="openExtra('nb')">NO BALL</button>
+    <button class="x" onclick="openExtra('b')">BYE</button><button class="x" onclick="openExtra('lb')">LEG BYE</button><button class="w" onclick="openWicket()">OUT</button><button class="u" onclick="undo()">↶ UNDO</button>
+  </div>
+  <div class="tools"><button onclick="swapStrike()">⇄ Swap strike</button><button onclick="tap(5)">+5 runs</button><button onclick="changeBowler()">Change bowler</button><button onclick="addLatePrompt()">+ Add player</button><button onclick="endInnings()">End innings</button></div>
+  ${prevOvers.length?`<h2>Recent overs</h2><div class="card ovlog">${prevOvers.map(o=>`<div><span class="on">Ov ${k.overs.indexOf(o)+1}</span>${o.balls.map(e=>chip(e,1)).join('')}<span style="margin-left:auto">${esc(k.bowl[o.bw].name)} · <b style="color:var(--chalk)">${o.runs}</b></span></div>`).join('')}</div>`:''}`;
+}
+function scoreRuns(m,n){
+  const ii=m.innings.length-1,rule=m.config.six||'runs';
+  if(n===6&&rule!=='runs'&&!isFreeHit(m,ii)){addBall(m,{runs:rule==='runsout'?6:0,w:{how:'Six & out',out:m.innings[ii].s,fld:null}});return}
+  addBall(m,{runs:n})}
+function tap(n){const m=LM();if(!m)return;scoreRuns(m,n)}
+function swapStrike(){const m=LM(),inn=m.innings[m.innings.length-1];if(inn.ns==null)return;[inn.s,inn.ns]=[inn.ns,inn.s];save();render()}
+function changeBowler(){const m=LM();m.innings[m.innings.length-1].bw=null;save();render()}
+function endInnings(){const m=LM(),ii=m.innings.length-1;
+  ask('End this innings?',ii?'The match will end and the result will be decided on current scores.':'Use this if players have to leave or you agree to stop early.','End innings',()=>{m.innings[ii].closed=true;afterBall(m);save();render()},true)}
+function queueNeeds(m){
+  if(modalOpen())return;
+  if(pendingBreak){const a=calc(m,0),c=m.config;openModal(`<div class="k small" style="color:var(--ball);font-weight:800;letter-spacing:.15em">INNINGS BREAK</div><h3 style="font-size:26px;margin:6px 0">${esc(a.team)} ${a.runs}/${a.wk}</h3><p class="muted">in ${ovs(a.legal,c.bpo)} overs</p><div class="card" style="margin-top:12px"><b style="font-size:18px">${esc(m.teams[a.inn.bowl].name)} need ${a.runs+1} runs</b><div class="muted">from ${c.overs*c.bpo} balls · RRR ${((a.runs+1)/c.overs).toFixed(2)}</div></div><button class="btn pri" onclick="pendingBreak=false;closeModal();render()">Start the chase →</button><button class="btn" style="margin-top:8px" onclick="pendingBreak=false;undo()">↶ Undo last ball</button>`,true);return}
+  const need=needOf(m);if(need)openPick(m,need);
+}
+function openPick(m,need){
+  const ii=m.innings.length-1,inn=m.innings[ii],c=m.config,k=calc(m,ii);let title,opts;
+  if(need==='bw'){
+    const prev=m.teams[inn.bowl].players.length>1?prevOverBowler(m,k):null;
+    let list=k.bowl.map((b,i)=>({i,b,dis:i===prev||(c.maxBowl&&b.lb>=c.maxBowl*c.bpo)}));
+    if(list.every(x=>x.dis))list.forEach(x=>x.dis=x.i===prev&&list.length>1);
+    title=`🎯 Bowler for over ${Math.floor(k.legal/c.bpo)+1}`;
+    opts=list.map(x=>`<button class="opt" ${x.dis?'disabled':''} onclick="pickSel('bw',${x.i})">${nm(m,x.b.name)}<small>${x.b.lb||x.b.r?`${ov(x.b.lb,c.bpo)}-${x.b.r}-${x.b.w}`:'yet to bowl'}${x.i===prev?' · bowled last over':''}</small></button>`).join('');
+  }else{
+    const opening=inn.balls.length===0;
+    title=opening?(need==='s'?'🏏 Opening striker':'🏏 Opening non-striker'):'🏏 Next batter in';
+    const av=k.bat.map((b,i)=>({b,i})).filter(x=>!x.b.in);
+    opts=av.map(x=>`<button class="opt" onclick="pickSel('${need}',${x.i})">${nm(m,x.b.name)}</button>`).join('')||'<p class="muted">No batters left.</p>';
+  }
+  const bt=need==='bw'?inn.bowl:inn.bat;
+  openModal(`<h3>${title}</h3><div class="muted small">${esc(m.teams[bt].name)}</div><div class="opts">${opts}</div>
+  <div class="addrow"><input id="late" placeholder="Late joiner? Add to ${esc(m.teams[bt].name)}"><button class="btn sm" onclick="addLate(${bt})">Add</button></div>
+  <div class="row" style="margin-top:12px">${inn.balls.length||ii?'<button class="btn" onclick="undo()">↶ Undo last ball</button>':''}<button class="btn" onclick="closeModal();go(\'home\')">⌂ Home</button></div>`,true);
+}
+function pickSel(need,i){const m=LM(),inn=m.innings[m.innings.length-1];inn[need]=i;save();closeModal();render()}
+function addLate(t){const m=LM(),v=($('#late').value||'').trim().slice(0,24);if(!v)return;
+  if(m.teams[t].players.some(p=>p.toLowerCase()===v.toLowerCase()))return toast('Already in team');
+  m.teams[t].players.push(v);if(!S.pool.includes(v))S.pool.push(v);save();closeModal();toast(v+' joined '+m.teams[t].name);render()}
+function addLatePrompt(){const m=LM(),inn=m.innings[m.innings.length-1];
+  openModal(`<h3>Add a player</h3><p class="muted small">Someone joined late? Add them to a team.</p><input id="late" placeholder="Name" style="margin:10px 0"><div class="row"><button class="btn" onclick="addLate(${inn.bat})">To ${esc(m.teams[inn.bat].name)}</button><button class="btn" onclick="addLate(${inn.bowl})">To ${esc(m.teams[inn.bowl].name)}</button></div>`)}
+function openExtra(t){const m=LM(),c=m.config;
+  const cfg={wd:{h:'Wide',s:`+${c.wideRun} penalty${c.wideLegal?'':', re-bowled'}. Extra runs they ran?`,o:[0,1,2,3,4]},
+    nb:{h:'No ball',s:`+${c.nbRun} penalty${c.nbLegal?'':', re-bowled'}${c.freeHit?', next ball is a FREE HIT':''}. Runs off the bat?`,o:[0,1,2,3,4,6]},
+    b:{h:'Byes',s:'Runs taken without hitting the ball',o:[1,2,3,4]},lb:{h:'Leg byes',s:'Runs off the body',o:[1,2,3,4]}}[t];
+  openModal(`<h3>${cfg.h}</h3><p class="muted small">${cfg.s}</p><div class="opts n">${cfg.o.map(n=>`<button class="opt" onclick="extra('${t}',${n})">${n}</button>`).join('')}</div>`)}
+function extra(t,n){closeModal();addBall(LM(),t==='nb'?{type:'nb',runs:n}:{type:t,ran:n})}
+let WK={};
+function openWicket(){const m=LM(),ii=m.innings.length-1,inn=m.innings[ii];if(needOf(m))return;
+  WK={how:isFreeHit(m,ii)?'Run out':null,out:inn.s,fld:null,runs:0,fh:isFreeHit(m,ii)};renderWk()}
+function renderWk(){const m=LM(),ii=m.innings.length-1,inn=m.innings[ii],k=calc(m,ii),ft=m.teams[inn.bowl].players;
+  const types=['Bowled','Caught','Run out','Stumped','Hit wicket','One tip one hand','Hit out of bounds'];
+  const ro=WK.how==='Run out';
+  let h=`<h3>Wicket! How out?</h3>${WK.fh?'<p class="small" style="color:var(--amber)">Free hit — only run-out allowed</p>':''}<div class="opts">${types.map(t=>`<button class="opt ${WK.how===t?'on':''}" ${WK.fh&&t!=='Run out'?'disabled':''} onclick="WK.how='${t}';renderWk()">${t}</button>`).join('')}</div>`;
+  if(ro){h+=`<div class="muted small">Who is out?</div><div class="opts">${[inn.s,inn.ns].filter(x=>x!=null).map(i=>`<button class="opt ${WK.out===i?'on':''}" onclick="WK.out=${i};renderWk()">${esc(k.bat[i].name)}<small>${i===inn.s?'striker':'non-striker'}</small></button>`).join('')}</div>
+    <div class="muted small">Runs completed before run-out</div><div class="opts n">${[0,1,2,3].map(n=>`<button class="opt ${WK.runs===n?'on':''}" onclick="WK.runs=${n};renderWk()">${n}</button>`).join('')}</div>`}
+  if(FIELD_HOW.includes(WK.how)){h+=`<div class="muted small">Fielder (optional)</div><div class="chips">${ft.map((p,i)=>`<button class="chip pool" style="${WK.fld===i?'background:var(--chalk);color:#111':''}" onclick="WK.fld=${WK.fld===i?'null':i};renderWk()">${esc(p)}</button>`).join('')}</div>`}
+  h+=`<div class="row" style="margin-top:14px"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn" style="background:var(--red);color:#fff;border-color:var(--red)" ${WK.how?'':'disabled'} onclick="confirmWk()">Confirm OUT</button></div>`;
+  openModal(h)}
+function confirmWk(){if(!WK.how)return;const m=LM(),inn=m.innings[m.innings.length-1];const ro=WK.how==='Run out';closeModal();
+  addBall(m,{runs:ro?WK.runs:0,w:{how:WK.how,out:ro?WK.out:inn.s,fld:FIELD_HOW.includes(WK.how)?WK.fld:null}})}
+
+
+/* ================= voice scoring ================= */
+const NUMW={zero:0,dot:0,nothing:0,khali:0,one:1,won:1,single:1,ek:1,two:2,too:2,to:2,double:2,do:2,three:3,tree:3,teen:3,triple:3,four:4,for:4,char:4,chaar:4,chauka:4,chowka:4,boundary:4,five:5,panch:5,six:6,sixer:6,sixes:6,chhakka:6,chakka:6,chhaka:6};
+function numIn(toks){for(const t of toks){if(/^\d+$/.test(t)&&+t<=6)return +t;if(t in NUMW)return NUMW[t]}return null}
+function parseVoice(raw){
+  const t=' '+String(raw).toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()+' ';
+  const after=re=>{const m=t.match(re);return numIn(t.slice(m.index+m[0].length).trim().split(' ').slice(0,3))};
+  let re;
+  if(/ (undo|cancel|galat|wrong|mistake) /.test(t))return {k:'undo'};
+  if(/swap|change strike|strike change|rotate/.test(t))return {k:'swap'};
+  if(/ no runs? | dot ball /.test(t))return {k:'run',n:0};
+  if((re=/leg ?(bye|byes|by|bi|bai)/).test(t))return {k:'lb',n:after(re)||1};
+  if((re=/no ?ball|know ball|noble|nobel/).test(t))return {k:'nb',n:after(re)??0};
+  if((re=/ (wide|wides|white|wild|wied|vide) /).test(t))return {k:'wd',n:after(re)??0};
+  if((re=/ (bye|byes|bai|by) /).test(t))return {k:'b',n:after(re)||1};
+  if(/run ?out|ran out|ranout/.test(t))return {k:'out',how:'Run out'};
+  if(/one tip|one hand|ek tip/.test(t))return {k:'out',how:'One tip one hand'};
+  if(/out of bound|over the wall|outside|ghar me|house/.test(t))return {k:'out',how:'Hit out of bounds'};
+  if(/hit wicket/.test(t))return {k:'out',how:'Hit wicket'};
+  if(/stump/.test(t))return {k:'out',how:'Stumped'};
+  if(/ (bowled|bold|bolled|clean bowled) /.test(t))return {k:'out',how:'Bowled'};
+  if(/caught|catch| cot | kaught/.test(t))return {k:'out',how:'Caught'};
+  if(/ (out|wicket|wickets|gaya|aout|howzat|howzzat|howzthat) /.test(t))return {k:'out'};
+  const n=numIn(t.trim().split(' '));if(n!=null)return {k:'run',n};
+  return null}
+let rec=null;
+function startVoice(){
+  const m=LM();if(!m)return;if(needOf(m))return toast('Pick the player first');
+  if(window.AndroidBridge&&AndroidBridge.startVoice){AndroidBridge.startVoice();return}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return toast('Voice input is not supported in this browser');
+  try{rec=new SR();rec.lang='en-IN';rec.maxAlternatives=5;rec.interimResults=false;
+    rec.onresult=e=>{const a=[...e.results[0]].map(x=>x.transcript);closeModal();onVoiceResult(a)};
+    rec.onerror=e=>{closeModal();toast(e.error==='not-allowed'?'Microphone permission denied':'Didn\'t hear anything — try again')};
+    rec.onend=()=>{if(modalOpen()&&$('.micpulse'))closeModal()};
+    rec.start();
+    openModal(`<div style="text-align:center"><div class="micpulse">🎤</div><h3>Listening…</h3>${cheat()}<button class="btn" onclick="try{rec.abort()}catch(e){};closeModal()">Cancel</button></div>`);
+  }catch(e){toast('Could not start voice input')}}
+const cheat=()=>`<div class="cheat"><span><b>“dot” / “zero”</b> 0</span><span><b>“single” / “ek”</b> 1</span><span><b>“two” / “do”</b> 2</span><span><b>“four” / “chauka”</b> 4</span><span><b>“six” / “chhakka”</b> 6</span><span><b>“wide” (“wide one”)</b></span><span><b>“no ball four”</b></span><span><b>“bye two”, “leg bye”</b></span><span><b>“bowled”</b> out</span><span><b>“caught” / “run out”</b></span><span><b>“undo”</b></span><span><b>“swap strike”</b></span></div>`;
+window.onVoiceResult=function(alts){
+  if(typeof alts==='string')alts=[alts];
+  for(const a of alts||[]){const c=parseVoice(a);if(c){execVoice(c,a);return}}
+  toast(`🎤 Didn't understand “${(alts&&alts[0])||''}”`)};
+function execVoice(c,text){
+  const m=LM();if(!m||view.name!=='live')return;
+  if(needOf(m))return toast('Pick the player first');
+  const ii=m.innings.length-1,inn=m.innings[ii];
+  const say=l=>setTimeout(()=>toast(`🎤 “${text}” → ${l}`),30);
+  switch(c.k){
+    case 'undo':undo();return say('Undo');
+    case 'swap':swapStrike();return say('Swap strike');
+    case 'run':scoreRuns(m,c.n);return say(c.n===0?'Dot ball':c.n+' run'+(c.n===1?'':'s'));
+    case 'wd':addBall(m,{type:'wd',ran:Math.min(c.n,4)});return say('Wide'+(c.n?' + '+c.n+' ran':''));
+    case 'nb':addBall(m,{type:'nb',runs:c.n});return say('No ball'+(c.n?' + '+c.n:''));
+    case 'b':case 'lb':addBall(m,{type:c.k,ran:Math.min(c.n,4)});return say((c.k==='b'?'Bye':'Leg bye')+' '+c.n);
+    case 'out':
+      if(c.how==='Bowled'&&!isFreeHit(m,ii)){addBall(m,{w:{how:'Bowled',out:inn.s,fld:null}});return say('Bowled!')}
+      openWicket();if(c.how&&(!WK.fh||c.how==='Run out')){WK.how=c.how;renderWk()}return say('Wicket — confirm details');
+  }}
+
+/* ================= stats ================= */
+function aggregate(list){
+  const P={};const get=n=>{const key=n.trim().toLowerCase();return P[key]||(P[key]={name:n.trim(),mt:new Set(),inns:0,r:0,b:0,f:0,s:0,outs:0,hs:-1,hsNo:false,ducks:0,lb:0,rc:0,w:0,bw:-1,br:0,dots:0,wd:0,nb:0,ct:0,pts:0,bpo:6})};
+  for(const m of list)m.innings.forEach((inn,ii)=>{const k=calc(m,ii),ft=m.teams[inn.bowl].players;
+    k.bat.forEach(b=>{if(!b.in)return;const p=get(b.name);p.mt.add(m.id);p.inns++;p.r+=b.r;p.b+=b.b;p.f+=b.f;p.s+=b.s;if(b.out)p.outs++;
+      if(b.r>p.hs||(b.r===p.hs&&!b.out)){p.hs=b.r;p.hsNo=!b.out}if(b.out&&b.r===0)p.ducks++;p.pts+=b.r+b.f+2*b.s+(b.r>=50?20:b.r>=25?10:0)});
+    k.bowl.forEach(w=>{if(!w.lb&&!w.r&&!w.wd&&!w.nb)return;const p=get(w.name);p.mt.add(m.id);p.bpo=m.config.bpo;p.lb+=w.lb;p.rc+=w.r;p.w+=w.w;p.dots+=w.dots;p.wd+=w.wd;p.nb+=w.nb;
+      if(w.w>p.bw||(w.w===p.bw&&w.r<p.br)){p.bw=w.w;p.br=w.r}p.pts+=w.w*20+w.dots+(w.w>=3?10:0)});
+    inn.balls.forEach(e=>{if(e.w&&e.w.fld!=null){const p=get(ft[e.w.fld]);p.ct++;p.pts+=8;p.mt.add(m.id)}});
+  });
+  return Object.values(P).map(p=>Object.assign(p,{mt:p.mt.size}));
+}
+function standings(list){const T={};
+  for(const m of list){if(m.status!=='done')continue;m.teams.forEach((t,i)=>{const key=t.name.trim().toLowerCase();const x=T[key]||(T[key]={name:t.name,p:0,w:0,l:0,t:0,rs:0});x.p++;
+    const inn=m.innings.findIndex(n=>n.bat===i);if(inn>=0)x.rs+=calc(m,inn).runs;
+    if(m.result.winner===-1)x.t++;else if(m.result.winner===i)x.w++;else x.l++})}
+  return Object.values(T).sort((a,b)=>b.w-a.w||b.t-a.t||b.rs-a.rs)}
+const COL=['#c8f03c','#4fb3ff'];
+function manhattan(m,small){
+  const c=m.config,ks=m.innings.map((_,i)=>calc(m,i)),n=c.overs;
+  const per=ks.map(k=>{const a=Array.from({length:n},()=>({r:0,w:0,has:false}));k.overs.forEach((o,i)=>{if(i<n){a[i].r=o.runs;a[i].w=o.w;a[i].has=true}});return a});
+  const max=Math.max(6,...per.flat().map(x=>x.r));
+  const W=340,H=small?90:160,L=small?4:24,B=small?4:20,T=10,gw=(W-L-4)/n,bw=Math.min(16,(gw-4)/2);
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Runs per over">`;
+  if(!small){for(let v=0;v<=max;v+=Math.ceil(max/4)){const y=H-B-(v/max)*(H-B-T);s+=`<line x1="${L}" x2="${W}" y1="${y}" y2="${y}" stroke="#2e3742" stroke-width="1"/><text x="${L-5}" y="${y+3}" fill="#8d98a5" font-size="9" text-anchor="end">${v}</text>`}}
+  per.forEach((a,j)=>a.forEach((x,i)=>{if(!x.has)return;const h=(x.r/max)*(H-B-T),bx=L+i*gw+gw/2-bw+(j*bw)+(j?1:-1);
+    s+=`<rect x="${bx}" y="${H-B-h}" width="${bw}" height="${Math.max(h,1)}" rx="3" fill="${COL[j]}"/>`;
+    for(let q=0;q<x.w;q++)s+=`<circle cx="${bx+bw/2}" cy="${H-B-h-5-q*8}" r="3.2" fill="#ff5a4e" stroke="#121519" stroke-width="1"/>`}));
+  if(!small)for(let i=0;i<n;i++){if(n>12&&i%2)continue;s+=`<text x="${L+i*gw+gw/2}" y="${H-5}" fill="#8d98a5" font-size="9" text-anchor="middle">${i+1}</text>`}
+  return s+'</svg>'}
+function worm(m){
+  const c=m.config,ks=m.innings.map((_,i)=>calc(m,i)),n=c.overs;
+  const cum=ks.map(k=>{let t=0,l=0;return [[0,0],...k.overs.map(o=>[(l+=o.legal)/c.bpo,t+=o.runs])]});
+  const max=Math.max(10,...cum.map(a=>a[a.length-1][1])),W=340,H=160,L=26,B=20,T=10;
+  const x=i=>L+(i/n)*(W-L-8),y=v=>H-B-(v/max)*(H-B-T);
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Worm chart">`;
+  for(let v=0;v<=max;v+=Math.ceil(max/4/5)*5||5)s+=`<line x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="#2e3742"/><text x="${L-5}" y="${y(v)+3}" fill="#8d98a5" font-size="9" text-anchor="end">${v}</text>`;
+  for(let i=0;i<=n;i++){if(n>12&&i%2)continue;s+=`<text x="${x(i)}" y="${H-5}" fill="#8d98a5" font-size="9" text-anchor="middle">${i}</text>`}
+  cum.forEach((a,j)=>{s+=`<polyline fill="none" stroke="${COL[j]}" stroke-width="2.5" stroke-linejoin="round" points="${a.map(([o,v])=>x(o)+','+y(v)).join(' ')}"/>`;
+    a.forEach(([o,v],i)=>{if(i&&ks[j].overs[i-1].w)s+=`<circle cx="${x(o)}" cy="${y(v)}" r="4" fill="#ff5a4e" stroke="#121519"/>`})});
+  return s+'</svg>'}
+const legend=m=>`<div class="legend">${m.innings.map((inn,j)=>`<span><i style="background:${COL[j]}"></i>${esc(m.teams[inn.bat].name)}</span>`).join('')}<span><i style="background:#ff5a4e;border-radius:50%"></i>Wicket</span></div>`;
+
+/* ================= match scorecard ================= */
+function matchLine(m){
+  return m.innings.map(inn=>{const k=calc(m,m.innings.indexOf(inn));return `<div class="ln ${m.result&&m.result.winner===inn.bat?'win':''}"><span>${esc(k.team)}</span><span>${k.runs}/${k.wk} <span class="muted small">(${ovs(k.legal,m.config.bpo)})</span></span></div>`}).join('')+(m.innings.length<2?`<div class="ln"><span>${esc(m.teams[m.innings[0].bowl].name)}</span><span class="muted small">yet to bat</span></div>`:'')}
+function matchCard(m,mini){return `<button class="card mc" onclick="go('${m.status==='live'?'live':'match'}',{id:'${m.id}'})"><div class="row" style="margin-bottom:6px"><span class="tag ${m.status==='live'?'live':''}">${m.status==='live'?'● Live':'Match '+m.no}</span><span class="small muted" style="text-align:right">${new Date(m.created).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})} · ${m.config.overs} ov</span></div>${matchLine(m)}${m.result?`<div class="rs">${esc(m.result.text)}</div>`:''}${mini&&m.status==='done'?`<div style="margin-top:8px">${manhattan(m,1)}</div>`:''}</button>`}
+function inningsCard(m,ii){
+  const k=calc(m,ii),c=m.config;
+  const bats=k.bat.filter(b=>b.in).sort((a,b)=>a.ord-b.ord),dnb=k.bat.filter(b=>!b.in);
+  const bowls=k.bowl.filter(b=>b.lb||b.r||b.wd||b.nb).sort((a,b)=>a.ord-b.ord);
+  const ex=k.ext.wd+k.ext.nb+k.ext.b+k.ext.lb;
+  return `<div class="card"><div class="inh"><span><span class="tag">${ii?'2nd':'1st'} inn</span> <b style="font-size:17px;margin-left:4px">${esc(k.team)}</b></span><span><b>${k.runs}/${k.wk}</b> <span class="muted">(${ovs(k.legal,c.bpo)})</span></span></div>
+  <table><tr><th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th></tr>
+  ${bats.map(b=>`<tr><td><b>${esc(b.name)}</b><span class="how">${b.out?esc(b.how):'not out'}</span></td><td><b>${b.r}</b></td><td>${b.b}</td><td>${b.f}</td><td>${b.s}</td><td>${b.b?(b.r/b.b*100).toFixed(0):'-'}</td></tr>`).join('')}
+  <tr><td>Extras <span class="how">wd ${k.ext.wd}, nb ${k.ext.nb}, b ${k.ext.b}, lb ${k.ext.lb}</span></td><td><b>${ex}</b></td><td colspan="4"></td></tr></table>
+  ${dnb.length?`<div class="small muted" style="margin-top:8px">Did not bat: ${dnb.map(b=>esc(b.name)).join(', ')}</div>`:''}
+  ${k.fow.length?`<div class="small muted" style="margin-top:6px">Fall of wickets: ${k.fow.map(f=>`${f.runs}-${f.wk} (${esc(f.name)}, ${ovs(f.ball,c.bpo)})`).join(' · ')}</div>`:''}
+  ${bowls.length?`<table style="margin-top:12px"><tr><th>Bowler</th><th>O</th><th>R</th><th>W</th><th>Econ</th><th>Wd</th><th>Nb</th></tr>
+  ${bowls.map(b=>`<tr><td><b>${esc(b.name)}</b></td><td>${ovs(b.lb,c.bpo)}</td><td>${b.r}</td><td><b>${b.w}</b></td><td>${b.lb?(b.r/b.lb*c.bpo).toFixed(1):'-'}</td><td>${b.wd}</td><td>${b.nb}</td></tr>`).join('')}</table>`:''}
+  ${k.overs.length?`<details style="margin-top:10px"><summary class="small muted">Ball by ball</summary><div class="ovlog" style="margin-top:8px">${k.overs.map((o,i)=>`<div><span class="on">Ov ${i+1}</span>${o.balls.map(e=>chip(e,1)).join('')}<span style="margin-left:auto">${esc(k.bowl[o.bw].name)} · <b style="color:var(--chalk)">${o.runs}</b></span></div>`).join('')}</div></details>`:''}</div>`}
+function vMatch(m){
+  const ag=m.status==='done'?aggregate([m]).sort((a,b)=>b.pts-a.pts):[],potm=ag[0];
+  return `<div class="top"><button class="ib" onclick="${view.fresh?"go('home',{},true)":'back()'}">←</button><div class="t">Match ${m.no} · ${fmtDay(m.day,{day:'numeric',month:'short'})}</div><button class="ib" onclick="matchMenu()">⋯</button></div>
+  ${m.result?`<div class="res ${m.result.winner===-1?'tie':''}">${view.fresh?'<div class="small" style="font-weight:800;letter-spacing:.15em">🏆 MATCH OVER</div>':''}<b>${esc(m.result.text)}</b>${potm?`<div class="small" style="margin-top:4px">⭐ Player of the match: <b style="display:inline;font-size:13px">${esc(potm.name)}</b> (${potm.pts} pts)</div>`:''}</div>`:`<button class="btn pri" style="margin-bottom:12px" onclick="go('live',{id:'${m.id}'},true)">● Resume live scoring</button>`}
+  ${m.innings.map((_,i)=>inningsCard(m,i)).join('')}
+  ${m.innings.some(n=>n.balls.length)?`<h2>Runs per over</h2><div class="card">${manhattan(m)}${legend(m)}</div><h2>Worm</h2><div class="card">${worm(m)}${legend(m)}</div>`:''}
+  ${m.status==='done'?`<div class="row" style="margin-top:6px"><button class="btn" onclick="rematch('${m.id}',0)">↻ Rematch</button><button class="btn pri" onclick="go('day',{day:'${m.day}'})">Day scoreboard</button></div>`:''}`}
+function matchMenu(){const m=getM(view.id);openModal(`<h3>Match ${m.no}</h3><div style="display:grid;gap:8px;margin-top:12px">
+  ${m.status==='done'?`<button class="btn" onclick="undo()">↶ Undo last ball (reopen match)</button><button class="btn" onclick="rematch('${m.id}',1)">⇄ Rematch with teams swapped batting</button>`:''}
+  <button class="btn" onclick="closeModal();shareText(matchText(getM(view.id)))">📤 Share scorecard as text</button>
+  <button class="btn danger" onclick="delMatch('${m.id}')">🗑 Delete match</button></div>`)}
+function rematch(id,swap){const m=getM(id);newDraft({teams:m.teams.map(t=>({name:t.name,players:t.players.filter(p=>p!==m.common)})),cfg:m.config,common:m.common||''});draft.batFirst=swap?1-m.innings[0].bat:m.innings[0].bat;closeModal();go('setup')}
+function delMatch(id){ask('Delete this match?','This cannot be undone.','Delete',()=>{S.matches=S.matches.filter(m=>m.id!==id);if(S.liveId===id)S.liveId=null;save();go('home',{},true)},true)}
+function matchText(m){let t=`🏏 Match ${m.no} — ${fmtDay(m.day)}\n`;m.innings.forEach((_,i)=>{const k=calc(m,i);t+=`\n${k.team}: ${k.runs}/${k.wk} (${ovs(k.legal,m.config.bpo)} ov)\n`;
+  k.bat.filter(b=>b.in).sort((a,b)=>a.ord-b.ord).forEach(b=>t+=`  ${b.name} ${b.r}${b.out?'':'*'} (${b.b})\n`);
+  k.bowl.filter(b=>b.lb||b.r).forEach(b=>t+=`  🎯 ${b.name} ${ovs(b.lb,m.config.bpo)}-${b.r}-${b.w}\n`)});
+  if(m.result)t+=`\n🏆 ${m.result.text}`;return t}
+
+/* ================= day scoreboard ================= */
+let dayTab='bat';
+function dayData(day){
+  const done=S.matches.filter(m=>m.day===day&&m.status==='done').sort((a,b)=>a.no-b.no);
+  const ag=aggregate(done);const tot={runs:0,wk:0,six:0,four:0,ext:0,balls:0};
+  done.forEach(m=>m.innings.forEach((_,i)=>{const k=calc(m,i);tot.runs+=k.runs;tot.wk+=k.wk;tot.ext+=k.ext.wd+k.ext.nb+k.ext.b+k.ext.lb;tot.balls+=k.legal;k.bat.forEach(b=>{tot.six+=b.s;tot.four+=b.f})}));
+  const by=(f,flt=()=>true)=>ag.filter(flt).sort(f)[0];
+  const aw=[];
+  const potd=by((a,b)=>b.pts-a.pts);
+  const tb=by((a,b)=>b.r-a.r||a.b-b.b,p=>p.inns);if(tb&&tb.r>0)aw.push(['🏏','Most runs',tb.name,`${tb.r} runs (${tb.b} b)`]);
+  const tw=by((a,b)=>b.w-a.w||a.rc-b.rc,p=>p.lb);if(tw&&tw.w>0)aw.push(['🎯','Most wickets',tw.name,`${tw.w} wkt${tw.w===1?'':'s'} · ${tw.rc} runs`]);
+  const sx=by((a,b)=>b.s-a.s,p=>p.s>0);if(sx)aw.push(['💥','Six machine',sx.name,`${sx.s} sixes`]);
+  const hs=by((a,b)=>b.hs-a.hs,p=>p.inns);if(hs&&hs.hs>0)aw.push(['⭐','Highest score',hs.name,`${hs.hs}${hs.hsNo?'*':''}`]);
+  const ec=by((a,b)=>a.rc/a.lb-b.rc/b.lb,p=>p.lb>=p.bpo);if(ec)aw.push(['🧱','Best economy',ec.name,`${(ec.rc/ec.lb*ec.bpo).toFixed(2)} per over`]);
+  const sr=by((a,b)=>b.r/b.b-a.r/a.b,p=>p.b>=6);if(sr)aw.push(['⚡','Best strike rate',sr.name,`SR ${(sr.r/sr.b*100).toFixed(0)}`]);
+  const fl=by((a,b)=>b.ct-a.ct,p=>p.ct>0);if(fl)aw.push(['🧤','Safe hands',fl.name,`${fl.ct} catch/run-out${fl.ct>1?'s':''}`]);
+  const gx=by((a,b)=>(b.wd+b.nb)-(a.wd+a.nb),p=>p.wd+p.nb>0);if(gx)aw.push(['🎁','Gift shop (extras)',gx.name,`${gx.wd} wd · ${gx.nb} nb`]);
+  const ducks=ag.filter(p=>p.ducks>0);if(ducks.length)aw.push(['🦆','Duck club',ducks.map(p=>p.name).join(', '),`${ducks.length} member${ducks.length>1?'s':''}`]);
+  return {done,ag,tot,potd,aw,st:standings(done)}}
+function vDay(day){
+  const days=[...new Set(S.matches.map(m=>m.day))].sort().reverse();
+  const D=dayData(day),live=S.matches.filter(m=>m.day===day&&m.status==='live');
+  const head=`<div class="top"><button class="ib" onclick="back()">←</button><div class="t">Day scoreboard</div><button class="ib" onclick="shareDay('${day}')">📤</button></div>
+  ${days.length>1?`<div class="daychips">${days.map(d=>`<button class="${d===day?'on':''}" onclick="go('day',{day:'${d}'},true)">${fmtDay(d,{day:'numeric',month:'short'})}</button>`).join('')}</div>`:''}`;
+  if(!D.done.length)return head+`<div class="empty"><div class="e">🏏</div><p>No completed matches on ${fmtDay(day)} yet.</p>${live.length?`<button class="btn pri" onclick="go('live',{id:'${live[0].id}'})">Resume live match</button>`:'<button class="btn pri" onclick="newMatch()">Start a match</button>'}</div>`;
+  const p=D.potd,ag=D.ag;
+  return head+`<div class="dhero"><div class="k">MATCHDAY REPORT</div><h1>${fmtDay(day)}</h1>
+    <div class="stats"><div class="stat"><b>${D.done.length}</b><span>Matches</span></div><div class="stat"><b>${D.tot.runs}</b><span>Runs</span></div><div class="stat"><b>${D.tot.wk}</b><span>Wickets</span></div><div class="stat"><b>${D.tot.six}</b><span>Sixes</span></div></div>
+    <div class="small muted" style="margin-top:10px">${D.tot.four} fours · ${D.tot.ext} extras · ${ovs(D.tot.balls,6).replace('.0','')} overs bowled</div></div>
+  ${p?`<div class="potd"><div class="k">⭐ PLAYER OF THE DAY</div><div class="n">${esc(p.name)}</div><div style="font-weight:700">${[p.inns?`${p.r} runs off ${p.b}`:'',p.lb?`${p.w} wkt${p.w===1?'':'s'} for ${p.rc}`:'',p.ct?`${p.ct} catch${p.ct>1?'es':''}`:''].filter(Boolean).join(' · ')}</div><div class="p"><b>${p.pts}</b><span class="small">pts</span></div></div>`:''}
+  <h2>Awards</h2><div class="aw">${D.aw.map(a=>`<div class="awc"><div class="i">${a[0]}</div><div class="t">${a[1]}</div><div class="n">${esc(a[2])}</div><div class="v">${esc(a[3])}</div></div>`).join('')}</div>
+  <h2>Team standings</h2><div class="card"><table><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Runs</th></tr>${D.st.map((t,i)=>`<tr><td><span class="rank ${i?'':'g'}">${i+1}</span><b>${esc(t.name)}</b></td><td>${t.p}</td><td><b>${t.w}</b></td><td>${t.l}</td><td>${t.t}</td><td>${t.rs}</td></tr>`).join('')}</table></div>
+  <h2>Leaderboard</h2><div class="card"><div class="seg" style="margin-bottom:10px">${[['bat','Batting'],['bowl','Bowling'],['mvp','MVP points']].map(([k,l])=>`<button class="${dayTab===k?'on':''}" onclick="dayTab='${k}';render()">${l}</button>`).join('')}</div>${lbTable(ag,dayTab)}</div>
+  <h2>Matches</h2>${D.done.map(m=>matchCard(m,1)).join('')}${live.map(m=>matchCard(m)).join('')}
+  <div class="row" style="margin-top:6px"><button class="btn" onclick="shareText(dayText('${day}'))">💬 Share as text</button><button class="btn pri" onclick="shareDay('${day}')">🖼 Share day card</button></div>`;
+}
+function dayText(day){const D=dayData(day);let t=`🏏 GULLY CRICKET — ${fmtDay(day)}\n${D.done.length} matches · ${D.tot.runs} runs · ${D.tot.wk} wkts · ${D.tot.six} sixes\n`;
+  if(D.potd)t+=`\n⭐ Player of the day: ${D.potd.name} (${D.potd.pts} pts)\n`;D.aw.forEach(a=>t+=`${a[0]} ${a[1]}: ${a[2]} — ${a[3]}\n`);
+  t+='\n📋 Results\n';D.done.forEach(m=>{t+=`M${m.no}: `+m.innings.map((_,i)=>{const k=calc(m,i);return `${k.team} ${k.runs}/${k.wk}`}).join(' vs ')+` → ${m.result.text}\n`});return t}
+function dayCard(day){
+  const D=dayData(day),cv=document.createElement('canvas'),W=1080,NR=Math.min(D.done.length,10),H=Math.max(1350,480+(D.potd?240:0)+Math.ceil(Math.min(6,D.aw.length)/2)*130+30+20+NR*56+70);cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  const F=(w,s)=>`${w} ${s}px system-ui,-apple-system,Roboto,sans-serif`;
+  const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#24341b');gr.addColorStop(.6,'#14171c');gr.addColorStop(1,'#101215');g.fillStyle=gr;g.fillRect(0,0,W,H);
+  g.strokeStyle='rgba(255,255,255,.03)';g.lineWidth=14;for(let i=-H;i<W;i+=40){g.beginPath();g.moveTo(i,0);g.lineTo(i+H,H);g.stroke()}
+  g.strokeStyle='rgba(200,240,60,.18)';g.lineWidth=4;g.setLineDash([16,14]);g.beginPath();g.arc(W-60,90,180,0,7);g.stroke();g.setLineDash([]);
+  const fit=(t,max,font)=>{g.font=font;let s=t;while(g.measureText(s).width>max&&s.length>1)s=s.slice(0,-1);return s===t?t:s+'…'};
+  g.fillStyle='#c8f03c';g.font=F(800,30);g.fillText('GULLY CRICKET · MATCHDAY REPORT',70,110);
+  g.fillStyle='#f4f1e6';g.font=F(900,74);g.fillText(fmtDay(day,{weekday:'long'}),70,200);g.font=F(700,40);g.fillStyle='#8d98a5';g.fillText(fmtDay(day,{day:'numeric',month:'long',year:'numeric'}),70,255);
+  const st=[[D.done.length,'MATCHES'],[D.tot.runs,'RUNS'],[D.tot.wk,'WICKETS'],[D.tot.six,'SIXES']];
+  st.forEach((s,i)=>{const x=70+i*240;g.fillStyle='rgba(0,0,0,.3)';rr(g,x,300,220,140,22);g.fill();g.fillStyle='#f4f1e6';g.font=F(900,64);g.textAlign='center';g.fillText(s[0],x+110,380);g.fillStyle='#8d98a5';g.font=F(700,22);g.fillText(s[1],x+110,418);g.textAlign='left'});
+  let y=480;
+  if(D.potd){const pg=g.createLinearGradient(70,y,1010,y+200);pg.addColorStop(0,'#ffc23d');pg.addColorStop(1,'#ff8a3d');g.fillStyle=pg;rr(g,70,y,940,200,30);g.fill();
+    g.fillStyle='#1a1205';g.font=F(900,26);g.fillText('⭐ PLAYER OF THE DAY',110,y+55);g.font=F(900,70);g.fillText(fit(D.potd.name,640,F(900,70)),110,y+135);
+    const p=D.potd;g.font=F(700,28);g.fillText([p.inns?`${p.r} runs`:'',p.lb?`${p.w} wkt${p.w===1?'':'s'}`:'',p.ct?`${p.ct} catch${p.ct>1?'es':''}`:''].filter(Boolean).join(' · '),110,y+178);
+    g.textAlign='center';g.font=F(900,72);g.fillText(p.pts,900,y+120);g.font=F(800,24);g.fillText('POINTS',900,y+155);g.textAlign='left';y+=240}
+  D.aw.slice(0,6).forEach((a,i)=>{const x=70+(i%2)*480,yy=y+Math.floor(i/2)*130;g.fillStyle='#1b2027';rr(g,x,yy,460,112,22);g.fill();
+    g.font=F(400,44);g.fillText(a[0],x+24,yy+70);g.fillStyle='#8d98a5';g.font=F(700,20);g.fillText(a[1].toUpperCase(),x+92,yy+38);
+    g.fillStyle='#f4f1e6';g.font=F(800,32);g.fillText(fit(a[2],340,F(800,32)),x+92,yy+75);g.fillStyle='#c8f03c';g.font=F(800,22);g.fillText(fit(a[3],340,F(800,22)),x+92,yy+100)});
+  y+=Math.ceil(Math.min(6,D.aw.length)/2)*130+30;
+  g.fillStyle='#8d98a5';g.font=F(800,24);g.fillText('RESULTS',70,y);y+=20;
+  D.done.slice(0,NR).forEach(m=>{y+=56;g.fillStyle='#f4f1e6';g.font=F(800,28);g.fillText('M'+m.no,70,y);
+    g.font=F(600,28);g.fillText(fit(m.innings.map((_,i)=>{const k=calc(m,i);return `${k.team} ${k.runs}/${k.wk}`}).join('  vs  '),520,F(600,28)),140,y);
+    g.fillStyle='#c8f03c';g.font=F(700,24);g.textAlign='right';g.fillText(fit(m.result.text.replace(/ \(.*\)$/,''),330,F(700,24)),1010,y);g.textAlign='left'});
+  return cv.toDataURL('image/png')}
+function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
+async function shareDay(day){
+  if(!dayData(day).done.length)return toast('No completed matches yet');
+  const url=dayCard(day);
+  if(window.AndroidBridge&&AndroidBridge.shareImage){AndroidBridge.shareImage(url.split(',')[1]);return}
+  openModal(`<h3>Day card</h3><p class="muted small">Long-press the image to save, or use the buttons.</p><img class="share" src="${url}" alt="Matchday report card"><div class="row"><a class="btn" href="${url}" download="gully-${day}.png">⬇ Download</a><button class="btn pri" onclick="nativeShare('${day}')">📤 Share</button></div>`)}
+async function nativeShare(day){try{const b=await (await fetch(dayCard(day))).blob();const f=new File([b],`gully-${day}.png`,{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],title:'Gully cricket matchday'});else toast('Sharing not supported here — use Download')}catch(e){}}
+function shareText(t){if(window.AndroidBridge&&AndroidBridge.shareText){AndroidBridge.shareText(t,'');return}
+  if(navigator.share){navigator.share({text:t}).catch(()=>{});return}
+  try{navigator.clipboard.writeText(t);toast('Copied to clipboard')}catch(e){toast('Could not share')}}
+
+
+/* ================= season ================= */
+let seasonRange='all',seasonTab='mvp',_lb=[];
+function potdOf(day){const ag=aggregate(S.matches.filter(m=>m.day===day&&m.status==='done')).sort((a,b)=>b.pts-a.pts);return ag[0]?ag[0].name:null}
+function lbTable(ag,tab){
+  const rows=tab==='bat'?ag.filter(x=>x.inns).sort((a,b)=>b.r-a.r||a.b-b.b):tab==='bowl'?ag.filter(x=>x.lb).sort((a,b)=>b.w-a.w||a.rc/a.lb-b.rc/b.lb):ag.slice().sort((a,b)=>b.pts-a.pts);
+  _lb=rows.map(r=>r.name);
+  const nmc=(x,i)=>`<td><span class="rank ${i?'':'g'}">${i+1}</span><b>${esc(x.name)}</b></td>`,tr=i=>`<tr onclick="openProfile(${i})" style="cursor:pointer">`;
+  const body=tab==='bat'?`<tr><th>Batter</th><th>Inn</th><th>R</th><th>B</th><th>HS</th><th>SR</th><th>4/6</th></tr>${rows.map((x,i)=>`${tr(i)}${nmc(x,i)}<td>${x.inns}</td><td><b>${x.r}</b></td><td>${x.b}</td><td>${x.hs}${x.hsNo?'*':''}</td><td>${x.b?(x.r/x.b*100).toFixed(0):'-'}</td><td>${x.f}/${x.s}</td></tr>`).join('')}`
+   :tab==='bowl'?`<tr><th>Bowler</th><th>O</th><th>R</th><th>W</th><th>Econ</th><th>Best</th></tr>${rows.map((x,i)=>`${tr(i)}${nmc(x,i)}<td>${ovs(x.lb,x.bpo)}</td><td>${x.rc}</td><td><b>${x.w}</b></td><td>${(x.rc/x.lb*x.bpo).toFixed(1)}</td><td>${x.bw}/${x.br}</td></tr>`).join('')}`
+   :`<tr><th>Player</th><th>M</th><th>Runs</th><th>Wkts</th><th>Field</th><th>Pts</th></tr>${rows.map((x,i)=>`${tr(i)}${nmc(x,i)}<td>${x.mt}</td><td>${x.r}</td><td>${x.w}</td><td>${x.ct}</td><td><b>${x.pts}</b></td></tr>`).join('')}`;
+  return `<table>${body}</table><div class="small muted" style="margin-top:8px">Tap a player for their profile.${tab==='mvp'?' Points: 1/run, +1 per four, +2 per six, +10 for 25+, +20 for 50+ · 20/wicket, +1 per dot ball, +10 for 3+ wkts · 8 per catch/run-out/stumping':''}</div>`}
+function seasonList(){const cut=seasonRange==='all'?'':dayKey(Date.now()-(seasonRange==='7'?6:29)*864e5);return S.matches.filter(m=>m.status==='done'&&m.day>=cut)}
+function records(list){
+  const R={};const up=(k,v,o,gt)=>{if(!R[k]||(gt?v>R[k].v:v<R[k].v))R[k]=Object.assign({v},o)};
+  for(const m of list){const c=m.config;const dd=fmtDay(m.day,{day:'numeric',month:'short'})+' · M'+m.no;
+    m.innings.forEach((inn,ii)=>{const k=calc(m,ii),d=dd;
+    up('hiT',k.runs,{who:k.team,txt:`${k.runs}/${k.wk} (${ovs(k.legal,c.bpo)})`,d},1);
+    if(ii===0||k.wk>=k.maxWk)up('loT',k.runs,{who:k.team,txt:`${k.runs}/${k.wk} (${ovs(k.legal,c.bpo)})`,d},0);
+    k.bat.forEach(b=>{if(!b.in)return;up('hs',b.r*1000-b.b,{who:b.name,txt:`${b.r}${b.out?'':'*'} (${b.b} balls)`,d},1);if(b.s)up('six',b.s,{who:b.name,txt:`${b.s} six${b.s>1?'es':''} in an innings`,d},1);
+      if(b.b>=5)up('sr',b.r/b.b,{who:b.name,txt:`SR ${(b.r/b.b*100).toFixed(0)} (${b.r} off ${b.b})`,d},1)});
+    k.bowl.forEach(w=>{if(w.w)up('bb',w.w*1000-w.r,{who:w.name,txt:`${w.w}/${w.r} (${ovs(w.lb,c.bpo)} ov)`,d},1)});
+    const o=k.overs.reduce((a,x)=>x.runs>a.runs?x:a,{runs:-1});if(o.runs>0)up('ov',o.runs,{who:k.bowl[o.bw].name,txt:`${o.runs} runs conceded in an over`,d},1)});
+    if(m.result&&m.result.winner===m.innings[0].bat){const a=calc(m,0),b=calc(m,1);up('win',a.runs-b.runs,{who:a.team,txt:'won by '+(a.runs-b.runs)+' runs',d:dd},1)}}
+  return [['🏏','Highest score',R.hs],['🎯','Best bowling',R.bb],['💥','Most sixes (innings)',R.six],['⚡','Best strike rate (5+ balls)',R.sr],['🔥','Most expensive over',R.ov],['📈','Highest team total',R.hiT],['📉','Lowest team total',R.loT],['🏆','Biggest win',R.win]].filter(x=>x[2])}
+function vSeason(){
+  const list=seasonList(),ag=aggregate(list),days=[...new Set(list.map(m=>m.day))].sort();
+  const lab={all:'ALL-TIME',30:'LAST 30 DAYS',7:'LAST 7 DAYS'}[seasonRange];
+  const head=`<div class="top"><button class="ib" onclick="back()">←</button><div class="t">Season stats</div><span style="width:40px"></span></div>
+   <div class="seg" style="margin-bottom:12px">${[['all','All time'],['30','30 days'],['7','7 days']].map(([k,l])=>`<button class="${seasonRange===k?'on':''}" onclick="seasonRange='${k}';render()">${l}</button>`).join('')}</div>`;
+  if(!list.length)return head+'<div class="empty"><div class="e">📈</div><p>No completed matches in this period yet.</p></div>';
+  const tot={runs:0,wk:0,six:0,four:0};list.forEach(m=>m.innings.forEach((_,i)=>{const k=calc(m,i);tot.runs+=k.runs;tot.wk+=k.wk;k.bat.forEach(b=>{tot.six+=b.s;tot.four+=b.f})}));
+  const pt={};days.forEach(d=>{const n=potdOf(d);if(n)pt[n]=(pt[n]||0)+1});const ptl=Object.entries(pt).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const top=ag.slice().sort((a,b)=>b.pts-a.pts)[0];
+  return head+`<div class="dhero"><div class="k">${lab} · ${days.length} DAY${days.length>1?'S':''} OF CRICKET</div><h1>${esc(fmtDay(days[0],{day:'numeric',month:'short'}))}${days.length>1?' – '+esc(fmtDay(days[days.length-1],{day:'numeric',month:'short',year:'numeric'})):''}</h1>
+   <div class="stats"><div class="stat"><b>${list.length}</b><span>Matches</span></div><div class="stat"><b>${tot.runs}</b><span>Runs</span></div><div class="stat"><b>${tot.wk}</b><span>Wickets</span></div><div class="stat"><b>${tot.six}</b><span>Sixes</span></div></div>
+   <div class="small muted" style="margin-top:10px">${tot.four} fours · ${ag.length} players</div></div>
+  ${top?`<div class="potd"><div class="k">👑 MVP OF THE ${seasonRange==='all'?'SEASON':'PERIOD'}</div><div class="n">${esc(top.name)}</div><div style="font-weight:700">${top.r} runs · ${top.w} wkt${top.w===1?'':'s'} · ${top.mt} match${top.mt===1?'':'es'}</div><div class="p"><b>${top.pts}</b><span class="small">pts</span></div></div>`:''}
+  ${ptl.length?`<h2>Player of the Day awards</h2><div class="card">${ptl.map(([n,c],i)=>`<div class="set"><span><span class="rank ${i?'':'g'}">${i+1}</span><b>${esc(n)}</b></span><span style="flex:0 0 auto;font-weight:800">${'⭐'.repeat(Math.min(c,5))} ${c}</span></div>`).join('')}</div>`:''}
+  <h2>Records</h2><div class="card">${records(list).map(([i,l,r])=>`<div class="set"><div class="l"><small>${i} ${l}</small><b>${esc(r.who)}</b><small>${esc(r.d)}</small></div><b style="text-align:right;color:var(--ball);max-width:50%">${esc(r.txt)}</b></div>`).join('')}</div>
+  <h2>Leaderboard</h2><div class="card"><div class="seg" style="margin-bottom:10px">${[['mvp','MVP'],['bat','Batting'],['bowl','Bowling']].map(([k,l])=>`<button class="${seasonTab===k?'on':''}" onclick="seasonTab='${k}';render()">${l}</button>`).join('')}</div>${lbTable(ag,seasonTab)}</div>
+  <h2>Teams</h2><div class="card"><table><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Win%</th></tr>${standings(list).map((t,i)=>`<tr><td><span class="rank ${i?'':'g'}">${i+1}</span><b>${esc(t.name)}</b></td><td>${t.p}</td><td><b>${t.w}</b></td><td>${t.l}</td><td>${t.t}</td><td>${Math.round(t.w/t.p*100)}%</td></tr>`).join('')}</table></div>`}
+function openProfile(i){
+  const name=_lb[i];if(!name)return;const key=name.toLowerCase();
+  const list=S.matches.filter(m=>m.status==='done').sort((a,b)=>a.created-b.created);
+  const p=aggregate(list).find(x=>x.name.toLowerCase()===key);if(!p)return;
+  const inns=[],perDay={};
+  list.forEach(m=>m.innings.forEach((_,ii)=>{const k=calc(m,ii);k.bat.forEach(b=>{if(b.in&&b.name.toLowerCase()===key){inns.push(b);perDay[m.day]=(perDay[m.day]||0)+b.r}})}));
+  const days=[...new Set(list.map(m=>m.day))],potd=days.filter(d=>(potdOf(d)||'').toLowerCase()===key).length;
+  const f25=inns.filter(b=>b.r>=25).length,avg=p.outs?(p.r/p.outs).toFixed(1):(p.inns?p.r+'*':'-');
+  const pd=Object.entries(perDay).sort().slice(-12),mx=Math.max(1,...pd.map(x=>x[1]));
+  const st=a=>`<div class="stats" style="margin-top:8px">${a.map(([v,l])=>`<div class="stat"><b style="font-size:19px">${v}</b><span>${l}</span></div>`).join('')}</div>`;
+  openModal(`<div class="small" style="color:var(--ball);font-weight:800;letter-spacing:.15em">PLAYER PROFILE · ALL-TIME</div><h3 style="font-size:28px;margin:4px 0">${esc(p.name)}</h3><div class="muted small">${p.mt} match${p.mt===1?'':'es'} · ${p.pts} MVP pts${potd?` · ⭐ ${potd}× Player of the Day`:''}</div>
+   <h2>Batting</h2>${st([[p.r,'Runs'],[avg,'Average'],[p.b?(p.r/p.b*100).toFixed(0):'-','Strike rate'],[p.hs<0?'-':p.hs+(p.hsNo?'*':''),'Best']])}${st([[p.inns,'Innings'],[p.f,'Fours'],[p.s,'Sixes'],[f25,'25+ scores']])}
+   ${p.lb?`<h2>Bowling</h2>${st([[ovs(p.lb,p.bpo),'Overs'],[p.w,'Wickets'],[(p.rc/p.lb*p.bpo).toFixed(1),'Economy'],[p.bw+'/'+p.br,'Best']])}`:''}
+   <h2>Fielding & fun</h2>${st([[p.ct,'Catches/RO'],[p.dots,'Dot balls'],[p.wd+p.nb,'Extras given'],[p.ducks,'Ducks 🦆']])}
+   ${inns.length?`<h2>Recent form</h2><div class="chips">${inns.slice(-10).reverse().map(b=>`<span class="bl ${b.r>=25?'b6':b.r>=10?'b4':b.out&&!b.r?'w':''}" style="min-width:42px">${b.r}${b.out?'':'*'}</span>`).join('')}</div>`:''}
+   ${pd.length>1?`<h2>Runs by day</h2><svg class="chart" viewBox="0 0 340 110">${pd.map(([d,r],j)=>{const w=300/pd.length,h=r/mx*70;return `<rect x="${20+j*w+3}" y="${85-h}" width="${w-6}" height="${Math.max(h,1)}" rx="3" fill="#c8f03c"/><text x="${20+j*w+w/2}" y="${80-h}" fill="#f4f1e6" font-size="10" text-anchor="middle">${r}</text><text x="${20+j*w+w/2}" y="102" fill="#8d98a5" font-size="9" text-anchor="middle">${fmtDay(d,{day:'numeric',month:'short'})}</text>`}).join('')}</svg>`:''}
+   <button class="btn" style="margin-top:14px" onclick="closeModal()">Close</button>`)}
+
+/* ================= home ================= */
+function newMatch(){newDraft();go('setup')}
+function vHome(){
+  const today=dayKey(Date.now()),live=S.liveId&&getM(S.liveId);
+  const todays=S.matches.filter(m=>m.day===today&&m.status==='done').sort((a,b)=>b.no-a.no);
+  const past=[...new Set(S.matches.filter(m=>m.day!==today&&m.status==='done').map(m=>m.day))].sort().reverse();
+  return `<div class="brand"><svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20" fill="#c8f03c"/><path d="M8 12c6 5 6 15 0 20M36 12c-6 5-6 15 0 20" stroke="#fff" stroke-width="2.5" fill="none" opacity=".9"/></svg><div><h1>GULLY<span>SCORER</span></h1><div class="small muted">No more “was that out?” arguments</div></div></div>
+  ${live&&live.status==='live'?`<h2>Live now</h2>${matchCard(live)}`:''}
+  <button class="btn pri" style="padding:18px;font-size:18px" onclick="newMatch()">＋ New match</button>
+  <h2>Today · ${fmtDay(today,{weekday:'short',day:'numeric',month:'short'})}</h2>
+  ${todays.length?`<button class="card mc" onclick="go('day',{day:'${today}'})" style="background:linear-gradient(120deg,#24341b,#1b2027);border-color:#c8f03c44"><b style="font-size:17px">🏆 Today's scoreboard</b><div class="small muted" style="margin-top:4px">Awards, player of the day, leaderboards & charts for ${todays.length} match${todays.length>1?'es':''}</div></button>${todays.map(m=>matchCard(m)).join('')}`:'<div class="card muted small">No matches finished today yet. Every match you score is saved automatically.</div>'}
+  ${S.matches.some(m=>m.status==='done')?`<button class="card mc" onclick="go('season')"><b style="font-size:17px">📈 Season stats & records</b><div class="small muted" style="margin-top:4px">All-time leaderboards, records, player profiles</div></button>`:''}
+  ${past.length?`<h2>Previous days</h2>${past.map(d=>{const n=S.matches.filter(m=>m.day===d&&m.status==='done').length;return `<button class="card mc row" onclick="go('day',{day:'${d}'})"><span><b>${fmtDay(d)}</b><div class="small muted">${n} match${n>1?'es':''}</div></span><span style="flex:0;color:var(--mut)">›</span></button>`}).join('')}`:''}
+  <h2>Data</h2><div class="row"><button class="btn sm" style="flex:1" onclick="doExport()">⬇ Backup</button><button class="btn sm" style="flex:1" onclick="$('#imp').click()">⬆ Restore</button></div>`}
+function doExport(){const t=JSON.stringify({app:'gully-scorer',v:1,matches:S.matches,pool:S.pool});
+  if(window.AndroidBridge&&AndroidBridge.shareText){AndroidBridge.shareText(t,'gully-backup-'+dayKey(Date.now())+'.json');return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'application/json'}));a.download='gully-backup-'+dayKey(Date.now())+'.json';document.body.appendChild(a);a.click();a.remove();toast('Backup downloaded')}
+function doImport(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.matches))throw 0;
+  const ids=new Set(S.matches.map(m=>m.id));let n=0;d.matches.forEach(m=>{if(!ids.has(m.id)){S.matches.push(m);n++}});(d.pool||[]).forEach(p=>{if(!S.pool.includes(p))S.pool.push(p)});save();toast(`Restored ${n} match${n===1?'':'es'}`);render()}catch(e){toast('Not a valid backup file')}inp.value=''};r.readAsText(f)}
+
+/* ================= render ================= */
+function render(){
+  const a=$('#app'),v=view.name;let html;
+  if(v==='setup'){if(!draft)newDraft();html=vSetup()}
+  else if(v==='live'){const m=getM(view.id);if(!m){go('home',{},true);return}if(m.status==='done'){go('match',{id:m.id},true);return}html=vLive(m)}
+  else if(v==='match'){const m=getM(view.id);if(!m){go('home',{},true);return}html=vMatch(m)}
+  else if(v==='day')html=vDay(view.day||dayKey(Date.now()));
+  else if(v==='season')html=vSeason();
+  else html=vHome();
+  a.innerHTML=html;
+  const key=v+(view.id||'')+(view.day||'');if(key!==lastView){window.scrollTo(0,0);lastView=key}
+  if(focusAdd!=null){const i=$('#add'+focusAdd);if(i)i.focus();focusAdd=null}
+  if(v==='live')queueNeeds(getM(view.id));
+}
+try{history.replaceState(view,'')}catch(e){}
+if(S.liveId&&getM(S.liveId)&&getM(S.liveId).status==='live'){view={name:'home'}}
+render();
+</script>
+</body>
+</html>

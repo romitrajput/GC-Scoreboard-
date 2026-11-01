@@ -1,0 +1,12 @@
+{
+  "name": "Gully Scorer (Android)",
+  "image": "mcr.microsoft.com/devcontainers/java:1-17-bookworm",
+  "hostRequirements": { "cpus": 4, "memory": "8gb" },
+  "containerEnv": {
+    "ANDROID_HOME": "/home/vscode/android-sdk",
+    "ANDROID_SDK_ROOT": "/home/vscode/android-sdk"
+  },
+  "postCreateCommand": "bash .devcontainer/setup-android.sh",
+  "forwardPorts": [8080],
+  "portsAttributes": { "8080": { "label": "Web preview" } }
+}

@@ -1,0 +1,38 @@
+plugins { id 'com.android.application' }
+
+// Every GitHub Actions run gets a higher version number, so Android installs it as an update.
+def runNo = (System.getenv("GITHUB_RUN_NUMBER") ?: "0").toInteger()
+
+android {
+    namespace 'com.gully.cricket'
+    compileSdk 34
+    defaultConfig {
+        applicationId "com.gully.cricket"
+        minSdk 26
+        targetSdk 34
+        versionCode 100 + runNo
+        versionName "1.2." + runNo
+    }
+    // Fixed signing key (committed on purpose) so every build can be installed
+    // over the previous one without uninstalling — your saved matches are kept.
+    signingConfigs {
+        debug {
+            storeFile file('gully-debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+    buildTypes {
+        debug { signingConfig signingConfigs.debug }
+        release { minifyEnabled false; signingConfig signingConfigs.debug }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.13.1'
+}
